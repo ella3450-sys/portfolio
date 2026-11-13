@@ -169,6 +169,43 @@
     .track.anim, .tile, .reveal, .t-media { transition: none; }
     .reveal { opacity: 1; transform: none; }
   }
+  /* ---------- Phones (under 768px): one column, readable fixed sizes. Desktop is untouched. ---------- */
+  @media (max-width: 767px) {
+    :root { --gut: 16px; --big: 30px; }
+    body { font-size: 16px; line-height: 1.3; }
+    /* Header: in the page flow, one line, no role */
+    .top { position: relative; display: flex; justify-content: space-between; align-items: baseline; gap: 1em; }
+    .top > a:first-child { white-space: nowrap; }
+    .top .role, .top > span:empty { display: none; }
+    /* Home: statement, then the four tiles stacked full width */
+    .h-head { padding: 24px var(--gut) 0; }
+    .h-statement { font-size: 28px; line-height: 1.08; }
+    .stage { margin-top: 32px; padding: 0 var(--gut); cursor: auto; }
+    .track { flex-direction: column; align-items: stretch; gap: 32px; width: auto; transform: none !important; }
+    .tile, .tile.on { width: auto; }
+    .tile:not(.copy1) { display: none; }
+    .tile .cap, .tile.left .cap { font-size: 15px; margin-bottom: 8px; white-space: normal; text-align: left; }
+    .foot { margin-top: 48px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: .6em 1em; }
+    .foot .mid { position: static; transform: none; }
+    /* Team pages: menu on top (team name, projects in a row), content full width below */
+    .t-wrap { grid-template-columns: minmax(0, 1fr); }
+    .t-info { position: static; height: auto; padding: 24px var(--gut) 0; display: block; min-width: 0; }
+    .t-team { margin-bottom: .7em; }
+    .plist { display: flex; gap: 1.2em; overflow-x: auto; white-space: nowrap; padding-bottom: .4em; scrollbar-width: none; }
+    .plist::-webkit-scrollbar { display: none; }
+    .prog { display: none; }
+    .t-media, .t-media.proj { padding: 24px var(--gut) 0; gap: 32px; }
+    .p-head, .t-media.proj .p-head { margin-bottom: 0; }
+    .ev-title { margin: 16px 0 -16px; }
+    .ev-text { margin: 0; }
+    .blurb, .tx, .items li, .facts div { grid-template-columns: 1fr; gap: .4em; }
+    .blurb { min-height: 0; }
+    .tx .lead { font-size: 22px; }
+    .frame.pair { display: grid; gap: 16px; }
+    .frame .box { padding: 6%; }
+    .next { padding: 48px 0; }
+  }
+
   /* No typographic widows: big lines are balanced, body text never ends on a lone word. */
   p, li, h1, h2, h3, h4, figcaption, small, .cap { text-wrap: pretty; }
   h1, h2, .lead, .tx .nums .n, .h-statement { text-wrap: balance; }
@@ -323,7 +360,8 @@ const TEAMS = [
     label: "Wix Templates Team",
     role: "Design Team Manager & Art Director",
     // The 7 Wix templates, a slow scroll of each (same recording as wix-templates-all.gif, as a lighter MP4).
-    tile: { w: 636, h: 397, cap: "", media: { type: "video", src: "assets/wix-templates/wix-templates-all.mp4", poster: "assets/wix-templates/wix-templates-all.jpg" } },
+    // Caption approved by Ella (2026-11-13).
+    tile: { w: 636, h: 397, cap: "a 15 person team bringing brand craft into the product", media: { type: "video", src: "assets/wix-templates/wix-templates-all.mp4", poster: "assets/wix-templates/wix-templates-all.jpg" } },
     // Ella's wording.
     text: [
       "As Design Team Manager and Art Director of the Wix templates team, I led a 15-person group: 11 designers, a content specialist, and a technical design team with its own manager reporting to me. We focused on creating high-craft user content, from full website templates to Add Panel assets like buttons, illustrations, images and components.",
@@ -436,7 +474,7 @@ const tiles = [];
 for (let c = 0; c < COPIES; c++) HOME.forEach((t) => {
   const i = TEAMS.indexOf(t);
   const T = t.tile, el = document.createElement("a");
-  el.className = "tile";
+  el.className = "tile" + (c === 1 ? " copy1" : "");   // copy1: the copy phones show, stacked
   el.href = "#/" + t.slug;
   el.dataset.i = i;
   el.dataset.h = HOME.indexOf(t);
@@ -451,6 +489,9 @@ for (let c = 0; c < COPIES; c++) HOME.forEach((t) => {
   tiles.push(el);
 });
 tiles.forEach(el => el.querySelectorAll("img").forEach(i => { i.loading = "eager"; i.onload = null; i.style.flexGrow = ""; }));
+// Phones: the tiles stack, so no carousel; each tile's video plays while it is on screen.
+const PHONE = matchMedia("(max-width: 767px)");
+tiles.forEach(el => el.classList.contains("copy1") && el.querySelectorAll("video").forEach(v => vio.observe(v)));
 const TILE_R = tiles.map(el => { const T = HOME[el.dataset.h].tile; return T.w / T.h; });
 let cur = N + HOME_START, shift = 0;                         // cur: index into tiles (middle copy = N..2N-1)
 
@@ -458,6 +499,7 @@ function sizeStage() {
   place(false);
 }
 function place(anim) {
+  if (PHONE.matches) { track.classList.remove("anim"); return; }
   track.classList.toggle("anim", !!anim);
   // Work out the final layout (middle tile big, the rest small) so the move and the resize end together.
   const px = innerWidth / 1440, gap = 40 * px;
@@ -491,8 +533,8 @@ function nearest() {
 // Drag / swipe; a click on a side tile centres it, a click on the centre tile opens its team.
 let drag = null;
 stage.addEventListener("pointerdown", e => {
-  if (e.button !== 0) return;
-  drag = { x: e.clientX, moved: false, id: e.pointerId };
+  if (e.button !== 0 || PHONE.matches) return;
+  drag ={ x: e.clientX, moved: false, id: e.pointerId };
 });
 addEventListener("pointermove", e => {
   if (!drag) return;
@@ -509,7 +551,7 @@ addEventListener("pointerup", () => {
 });
 stage.addEventListener("click", e => {
   const el = e.target.closest(".tile");
-  if (!el) return;
+  if (!el || PHONE.matches) return;   // phones: a tap opens the team
   if (stage.dataset.justDragged) { e.preventDefault(); return; }
   const k = tiles.indexOf(el);
   if (k !== cur) { e.preventDefault(); goTo(k); }
@@ -518,7 +560,7 @@ stage.addEventListener("pointerup", () => { if (stage.classList.contains("drag")
 addEventListener("pointercancel", () => { if (drag) { drag = null; stage.classList.remove("drag"); goTo(nearest()); } });
 let wheelLock = 0;     // a sideways trackpad swipe moves the tiles (one step per gesture); up/down scrolls the page
 $("#home").addEventListener("wheel", e => {
-  if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+  if (PHONE.matches || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
   e.preventDefault();
   const d = e.deltaX;
   if (Math.abs(d) < 12 || Date.now() < wheelLock) return;
@@ -677,6 +719,9 @@ function renderAbout() {
   wire();
 }
 function wire() {
+  // Phones: the project links are one sideways row; bring the current one into view.
+  const pl = team.querySelector(".plist"), cur = pl && pl.querySelector("[aria-current]");
+  if (PHONE.matches && cur) pl.scrollLeft += cur.getBoundingClientRect().left - pl.getBoundingClientRect().left - 16;
   team.querySelectorAll("video").forEach(v => vio.observe(v));
   if (teamObs) teamObs.disconnect();
   teamObs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add("in"); }), { rootMargin: "0px 0px -6% 0px" });
