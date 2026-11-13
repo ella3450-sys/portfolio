@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ella Moscovitz — Design Lead</title>
+<meta name="description" content="Ella Moscovitz, Design Lead. The three design teams I lead: Base44 Design, Wix Design Development and Wix Templates.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- davidrinman.com uses Monument Grotesk (commercial). Inter Tight is the free Google Fonts match. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f8f8;
+    --home: #eaffb9;
+    --tile: #f2f3ed;
+    --serif: "EB Garamond", Garamond, "Times New Roman", serif;
+    --px: calc(100vw / 1440);          /* one Figma pixel at the 1440 design width */
+    --ink: #111;
+    --mute: #6d6d6d;
+    --frame: #e7e5e3;
+    --line: #dcdcd9;
+    --accent: #e0481c;
+    --gut: clamp(14px, 1.1vw, 24px);
+    --big: clamp(34px, 3.7vw, 86px);
+    --small: clamp(14px, 1.08vw, 25px);
+    --ease: cubic-bezier(.22, .7, .15, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400; font-size: var(--small); line-height: 1.2;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  img, video { display: block; }
+  h1, h2, h3, strong { font-weight: inherit; }
+  ul, ol { list-style: none; }
+  .big { font-size: var(--big); line-height: .95; letter-spacing: -.025em; }
+  .mute { color: var(--mute); }
+
+  /* Header: davidrinman 4-column grid */
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gut); }
+  .top { position: fixed; inset: 0 0 auto 0; z-index: 20; padding: var(--gut); }
+  .top .links { grid-column: 4; justify-self: end; display: flex; gap: .9em; }
+  .top a:hover { color: var(--mute); }
+  body.is-team .top { background: var(--bg); }
+  body:not(.is-team) { background: var(--home); }
+  .top .role { position: absolute; top: var(--gut); left: 50%; transform: translateX(-50%); }
+
+  .view { opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility 0s .5s; }
+  .view.on { opacity: 1; visibility: visible; transition: opacity .6s ease .1s, visibility 0s; }
+  .view:not(.on) { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }   /* out of the page flow while it fades */
+
+  /* ---------- Home: davidrinman statement + mennour carousel ---------- */
+  /* The homepage scrolls: statement, the row of tiles (shown whole), then the footer */
+  #home { overflow: clip; }
+  body:not(.is-team) .top { background: var(--home); }
+  .h-head { padding: calc(83 * var(--px)) var(--gut) 0; }
+  .h-statement { max-width: 18.5em; margin: 0 auto; text-align: center; line-height: 1.05; }
+
+  /* A row of tiles at their own sizes; the active one sits in the middle */
+  .stage { position: relative; margin-top: calc(48 * var(--px)); overflow: clip; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  .stage.drag { cursor: grabbing; }
+  .track { display: flex; align-items: center; gap: calc(40 * var(--px)); width: max-content; will-change: transform; }
+  /* mennour.com timing (300ms). The middle tile is 564px tall;
+     side tiles are 360px tall. Widths follow each picture's ratio, and the size change animates with the move. */
+  .track.anim { transition: transform .3s ease; }
+  .tile { flex: none; width: calc(var(--r) * var(--side) * var(--px)); }
+  .tile.on { width: calc(var(--r) * var(--main) * var(--px)); }
+  .track { --main: 564; --side: 360; }
+  .track.anim .tile { transition: width .3s ease; }
+  .tile .cap {
+    font-family: var(--serif); font-size: calc(18 * var(--px)); line-height: 1.33; letter-spacing: 0;
+    margin-bottom: calc(12 * var(--px)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tile .cap b { font-weight: 600; }
+  .tile.left .cap { text-align: right; }
+  .foot { margin-top: calc(125 * var(--px)); padding: var(--gut); position: relative; }
+  .foot .mid { position: absolute; top: var(--gut); left: 50%; transform: translateX(-50%); }
+  .foot .links { grid-column: 4; justify-self: end; display: flex; gap: .9em; }
+  .foot a:hover { color: var(--mute); }
+  .tile .pic { position: relative; aspect-ratio: var(--r); background: var(--tile); overflow: hidden; }
+  .tile .pic > img, .tile .pic > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: var(--op, 50% 50%); pointer-events: none; }
+  .tile .win { position: absolute; overflow: hidden; }
+  .tile .win > * { position: absolute; height: auto; aspect-ratio: 16 / 9; pointer-events: none; }
+
+  /* ---------- Team page: corentinbernadou layout ---------- */
+  .t-wrap { display: grid; grid-template-columns: 30vw 1fr; }
+  .t-info {
+    position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: calc(179 * var(--px)) 3vw calc(var(--gut) * 3) var(--gut);
+  }
+  /* Small event titles on the Events page: extra air above, close to their pictures below. */
+  .ev-title { font-weight: 400; margin: calc(var(--gut) * 2) 0 calc(.7em - 3.3vw); }
+  .p-head + .ev-title, .sr + .ev-title { margin-top: 0; }
+  .sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ev-text { display: grid; gap: .9em; max-width: 31.6em; font-family: var(--serif); margin: calc(var(--gut) * 2) 0 calc(1.2em - 3.3vw); }
+  .sr + .ev-text, .ev-title + .ev-text { margin-top: 0; }
+  .ev-text a { text-decoration: underline; text-underline-offset: .2em; }
+  .plist { display: grid; gap: 1.2em; justify-items: start; }
+  .plist a { color: var(--mute); transition: color .3s ease; }
+  .plist a:hover, .plist a[aria-current] { color: var(--ink); }
+  /* The team name heads the project list, level with the page title, and links to the team's main page. */
+  .t-team { display: inline-block; margin-bottom: 1.8em; color: var(--ink); font-family: var(--serif); }
+  .t-team:hover { text-decoration: underline; text-underline-offset: .2em; text-decoration-thickness: 1px; }
+  /* Scroll progress: a track from 0 to 100 with a dark grey fill */
+  .prog #barNum { text-align: right; }
+  .prog { display: grid; grid-template-columns: 1fr 3ch; align-items: center; gap: .8em; color: var(--mute); font-variant-numeric: tabular-nums; }
+  .bar { height: 2px; background: var(--line); }
+  .bar i { display: block; height: 100%; width: 0; background: #3a3a3a; }
+
+  /* Team blurb at the top of the scroll */
+  .blurb { display: grid; grid-template-columns: calc(200 * var(--px)) 1fr; gap: var(--gut); padding-top: .2em; min-height: calc(257 * var(--px)); align-content: start; }
+  .blurb h3 { color: var(--mute); max-width: 11em; }
+  .blurb .body { display: grid; gap: .9em; max-width: 31.6em; font-family: var(--serif); }
+  .p-head { margin-bottom: calc(10 * var(--px) - 3.3vw); }
+  /* Project pages (not the team's first): title at the top, level with the menu, its blurb below, then images */
+  .t-media.proj { padding-top: calc(179 * var(--px) - .1em); }
+  .p-head .p-blurb { display: grid; gap: .9em; max-width: 31.6em; font-family: var(--serif); }
+  .p-head > p + .p-blurb { margin-top: 1.2em; }
+  .t-media.proj .p-head { margin-bottom: calc(32 * var(--px) - 3.3vw); }   /* ~10px to the first image (cancels the column gap) */
+
+  .t-media {
+    padding: calc(176 * var(--px)) var(--gut) 0 0; display: grid; gap: 3.3vw; align-content: start; min-width: 0;
+    transition: opacity .45s ease, transform .6s var(--ease);
+  }
+  .t-media.swap { opacity: 0; transform: translateY(16px); }
+
+  /* Text blocks in the scroll: label on the left, text on the right */
+  .tx { display: grid; grid-template-columns: 1fr 2fr; gap: var(--gut); padding-top: .2em; }
+  .tx > h3 { color: var(--mute); }
+  .tx .body { display: grid; gap: .9em; max-width: 34em; font-family: var(--serif); }
+  .tx .lead, .tx .nums .n { font-family: "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .tx .lead { font-size: calc(var(--big) * .62); line-height: 1.02; letter-spacing: -.02em; }
+  .items { display: grid; gap: .9em; }
+  .items li { display: grid; grid-template-columns: 1fr 1.6fr; gap: var(--gut); padding-top: .9em; border-top: 1px solid var(--line); }
+  .items li.plain { grid-template-columns: 1fr; }
+  .items li b { font-weight: inherit; }
+  .facts { display: grid; gap: .5em; }
+  .facts div { display: grid; grid-template-columns: 7em 1fr; gap: var(--gut); }
+  .facts dt { color: var(--mute); }
+  .nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(11em, 1fr)); gap: 1.6em var(--gut); }
+  .nums .n { font-size: var(--big); line-height: .95; letter-spacing: -.025em; margin-bottom: .3em; }
+  .nums p + p { margin-top: .35em; }
+  .flow { display: grid; gap: .9em; counter-reset: s; }
+  .flow li { padding-top: .9em; border-top: 1px solid var(--line); }
+  .flow li > span { color: var(--mute); margin-right: .8em; }
+  .flow ul { margin-top: .5em; color: var(--mute); }
+  .p-head .big + p { margin-top: .9em; max-width: 34em; }
+
+  .frame { display: block; }
+  .frame img, .frame video { width: 100%; height: auto; }
+  .frame .box { background: var(--frame); padding: 6% 20%; }   /* video at 60% of the column on a grey panel */
+  .frame.pair { display: flex; gap: var(--gut); align-items: flex-start; }
+  .frame.pair > * { flex: 1 1 0; min-width: 0; }
+  .frame figcaption { margin-top: .6em; color: var(--mute); font-family: var(--serif); font-style: italic; font-size: .85em; }
+  .next { display: block; padding: 10vh 0 calc(var(--gut) * 3); }
+  .next small { display: block; color: var(--mute); font-family: var(--serif); font-size: var(--small); margin-bottom: .6em; }
+  .frame .crop { object-fit: cover; }
+  .next:hover .big { color: var(--mute); }
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s ease, transform 1.1s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track.anim, .tile, .reveal, .t-media { transition: none; }
+    .reveal { opacity: 1; transform: none; }
+  }
+  /* No typographic widows: big lines are balanced, body text never ends on a lone word. */
+  p, li, h1, h2, h3, h4, figcaption, small, .cap { text-wrap: pretty; }
+  h1, h2, .lead, .tx .nums .n, .h-statement { text-wrap: balance; }
+</style>
+</head>
+<body>
+
+<header class="top grid4">
+  <a href="#/">Ella Moscovitz</a>
+  <span class="role">Design Lead</span>
+  <span></span>
+  <nav class="links">
+    <a href="mailto:ella3450@gmail.com">Email</a>
+    <a href="https://www.linkedin.com/in/ella-moscovitz-b3b920102/" target="_blank" rel="noopener">LinkedIn</a>
+  </nav>
+</header>
+
+<main>
+  <section id="home" class="view" aria-label="Teams">
+    <div class="h-head" id="hHead">
+      <h1 class="big h-statement" id="hStatement"></h1>
+    </div>
+    <div class="stage" id="stage" aria-roledescription="carousel"><div class="track" id="track"></div></div>
+    <footer class="foot grid4">
+      <span>Thanks!</span>
+      <a class="mid" href="https://www.instagram.com/ella_mos/" target="_blank" rel="noopener">Instagram</a>
+      <nav class="links">
+        <a href="mailto:ella3450@gmail.com">Email</a>
+        <a href="https://www.linkedin.com/in/ella-moscovitz-b3b920102/" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+    </footer>
+  </section>
+
+  <section id="team" class="view" aria-live="polite"></section>
+</main>
+
+<!-- Ella's v1 case-study texts, unchanged. -->
+<script type="application/json" id="caseData">{"base44-components": {"id": "base44-components", "title": "Base44 Designed components", "subtitle": "A hand-crafted component library for an AI-native builder, with an AI design workflow and an agentic QA loop behind it", "context": "A first-of-its-kind component library for the Base44 web and app builder, so users can add well-designed UI that also works better: solving real functional needs and adding genuine UX value, not generic AI output.", "role": ["**Role:** Design Lead & AI Workflow Architect. Set the creative direction, guided the team's AI workflow and built an automated QA agent.", "**Timeline:** 4 months.", "**Team:** Design Lead (me), Content Strategist, AI Specialist, Dedicated Builder Engineer, and 10+ designers across Tel Aviv and Kyiv."], "status": "Live in the Base44 builder.", "statement": "How do you build a component library for an AI-native builder that beats generic AI output, with more than ten designers in two cities?", "challenge": ["Generic AI generators produce cookie-cutter UI that lacks thoughtful UX. Every component needed real design craft and intentional functionality, and had to keep working inside whatever app it landed in."], "constraints": ["**Beating “AI slop”.** Bring real design craft and intentional functionality to every component.", "**Guiding distributed teams.** 10+ designers across Tel Aviv and Kyiv needed clear frameworks and regular oversight to keep quality consistent.", "**Complex functional QA.** Components had to inherit host site themes and keep their logic intact, like a shopping cart connected to checkout."], "did": ["**Built the content strategy on real demand.** With our Content Strategist I analysed Base44 search trends. Demand was highest for data visualization, where template components are usually dry, so we redesigned analytics panels, metrics cards and data tables to make complex admin layouts clear and engaging.", "**Kept two teams visually aligned.** Reference moodboards and style guidelines set expectations from the start, and a custom internal tracking app surfaced design drift early in weekly syncs.", "**Guided an AI-assisted design workflow.** I tested and refined the Claude prompt logic myself to find edge cases, then walked designers through it step by step, keeping their output aligned with Base44's structural rules.", "**Turned QA into an agent.** See below."], "hero": {"type": "video", "src": "assets/designed/components/components-hero.mp4", "poster": "assets/designed/components/components-hero.jpg", "label": "", "flat": true}, "sections": [{"title": "Streamlining QA with an agentic skill", "text": ["QA started as a manual bottleneck: hours of clicking through test sites to check responsive behavior, links and functional logic for every component. I designed an automated agentic QA workflow that turned it into a quick final sign-off."], "gallery": [{"type": "video", "src": "assets/designed/components/comp-01.mp4", "poster": "assets/designed/components/comp-01.jpg", "label": "", "caption": "Image Gallery 3: a numbered list that shows each item’s image."}, {"type": "video", "src": "assets/designed/components/comp-03.mp4", "poster": "assets/designed/components/comp-03.jpg", "label": "", "caption": "Image Gallery 7: a list of items, each opening its photo and description."}, {"type": "video", "src": "assets/designed/components/image-gallery-12.mp4", "poster": "assets/designed/components/image-gallery-12.jpg", "label": "", "caption": "Image Gallery 12: images build up into a collage, each with a title and credit."}], "cols": 1, "tiles": "framed"}], "statsLead": [{"num": "Used by thousands of people, every day.", "text": "The Base44 AI builder adds the library's components to the apps people create: around 11,000–12,000 new apps a day, and up to 800 an hour at peak times."}], "stats": [{"num": "30,000+", "text": "apps built with the components in the first days after launch.", "note": "For about 28,000 unique users."}, {"num": "83%", "text": "of apps get a matching component, found in about 0.25 seconds.", "note": "With a 100% success rate."}, {"num": "166", "text": "unique components actively deployed.", "items": ["Hero sections · ~14.6k apps", "Stat cards · 5.4k apps", "Dashboards · 2.1k apps"]}], "introMedia": [{"type": "video", "src": "assets/designed/components/product-grid.mp4", "poster": "assets/designed/components/product-grid.jpg", "label": "", "caption": "Product Grid: product cards with name and price."}, {"type": "video", "src": "assets/designed/components/product-grid-2.mp4", "poster": "assets/designed/components/product-grid-2.jpg", "label": "", "caption": "Product Grid 2: product cards with category tags."}], "preChallengeMedia": [{"type": "video", "src": "assets/designed/components/product-detail.mp4", "poster": "assets/designed/components/product-detail.jpg", "label": "", "caption": "Product Detail: a product page with colour options and buy buttons."}, {"type": "video", "src": "assets/designed/components/product-detail-4.mp4", "poster": "assets/designed/components/product-detail-4.jpg", "label": "", "caption": "Product Detail 4: a product page with licence options and prices."}], "challengeMedia": [{"type": "video", "src": "assets/designed/components/order-menu.mp4", "poster": "assets/designed/components/order-menu.jpg", "label": "", "caption": "Order Menu: a restaurant menu with category tabs."}], "didMedia": [{"type": "video", "src": "assets/designed/components/wishlist.mp4", "poster": "assets/designed/components/wishlist.jpg", "label": "", "caption": "Wishlist: a product grid where each item can be added to a wishlist."}, {"type": "video", "src": "assets/designed/components/comp-07.mp4", "poster": "assets/designed/components/comp-07.jpg", "label": "", "caption": "Text Effects 2: letters grow heavier as the cursor nears them."}]}, "base44-templates": {"id": "base44-templates", "title": "Base44 Templates flow", "subtitle": "Scaling AI-Native Web & App Design", "contextLabel": "Overview", "context": ["Templates on Base44 represent the intersection of brand identity and web design: each template is essentially a mini-brand tailored for a specific business or product niche. When I joined Base44, I was tasked with leading our template creation initiative.", "After months of tedious manual iterations, I spearheaded a radical workflow pivot: partnering with content strategy to target real user search demand and building an agentic AI flow that eliminated technical friction, so designers could focus purely on high-craft visual direction."], "role": ["**Role:** Design Lead & AI Workflow Architect", "**Scope:** Template Architecture, Content-Driven Design Strategy, Agentic Workflow Optimization", "**Platform:** Base44 Web & App Builder"], "sections": [{"title": "By the numbers", "stats": [{"num": "37", "text": "Official templates live in the Base44 gallery: 18 apps and 19 websites.", "size": "half"}, {"num": "100K+", "text": "Uses of the official templates, counting each person once per template.", "size": "half"}, {"num": "8,705", "text": "People have used Fitness Studio, the most-used template on this page.", "size": "half"}, {"num": "1,337", "text": "Templates in the gallery overall, community ones included.", "note": "Catalog figures as of November 2026.", "size": "half"}]}, {"title": "The challenge", "big": "Balancing scale with craft", "bullets": ["**The “vibe coding” learning curve.** Traditional web design relies on direct visual editing. Prompting AI to build tailored, bespoke layouts requires a fundamentally different mindset that initially created friction for designers.", "**Traditional workflows in an AI era.** Applying legacy drag-and-drop template workflows to prompt-driven development proved too slow and tedious for scaling output.", "**Balancing scale with craft.** We needed dozens of unique, production-ready app and website templates without sacrificing visual quality or falling back on repetitive layouts."]}, {"title": "Art direction", "gallery": [{"type": "video", "src": "assets/templates/fitness-studio.mp4", "poster": "assets/templates/fitness-studio.jpg", "label": ""}]}, {"title": "Strategic shift", "big": "Search-driven content strategy", "text": ["To move away from speculative design work, I collaborated closely with our Content Specialist to ground our template roadmap in hard user data."], "bullets": ["**Search intent mapping.** Analyzed top user search queries inside Base44 to identify high-demand web and app categories.", "**Targeted template roadmap.** Prioritized dozens of business archetypes, SaaS dashboards, e-commerce storefronts and service platforms that users were actively trying to build."]}, {"title": "Art direction", "gallery": [{"type": "video", "src": "assets/templates/travel-photography-portfolio.mp4", "poster": "assets/templates/travel-photography-portfolio.jpg", "label": ""}]}, {"title": "The breakthrough", "big": "The agentic template workflow", "flow": [{"title": "Search-driven brief"}, {"title": "Custom AI agent execution", "items": ["Generates core layout & structural code", "Handles boilerplate logic & wiring", "Establishes baseline responsive layout"]}, {"title": "Designer creative layer", "items": ["Bespoke brand identity & typography", "Fine-tuned visual craft & art direction", "Polished micro-interactions & details"]}], "bullets": ["**Automating the boilerplate.** An agent flow handles initial layout generation, site architecture and code setup based on the content brief.", "**Focus on pure design.** Designers spend their time on art direction, visual refinement and brand identity, the true essence of high-value design."]}, {"title": "Art direction", "gallery": [{"type": "video", "src": "assets/templates/product-landing-page.mp4", "poster": "assets/templates/product-landing-page.jpg", "label": ""}]}, {"title": "", "gallery": [{"type": "video", "src": "assets/templates/righteous-launch-ready-now.mp4", "poster": "assets/templates/righteous-launch-ready-now.jpg", "label": ""}]}], "outcomeTitle": "Impact & key takeaways", "impact": [{"title": "Workflow transformation", "text": "Shifted template production from a slow, manual prompting process into a high-velocity, designer-⁠led pipeline."}, {"title": "Content-market fit", "text": "Delivered dozens of targeted app and website templates directly solving top user search needs in Base44."}, {"title": "Design efficiency", "text": "Designers focus exclusively on creative decisions while the custom agentic flow handles technical build execution."}], "hero": {"type": "video", "src": "assets/templates/templates-showcase.mp4", "poster": "assets/templates/templates-showcase.jpg", "label": ""}}, "internal-art-direction": {"id": "internal-art-direction", "title": "Art Direction of Internal agency", "subtitle": "Internal Design Agency: Team Leadership & Art Direction", "contextLabel": "Overview", "context": ["As Design Team Manager and Art Director at Wix, I led a 22-person internal design agency, a dedicated “Design SWAT” team for high-impact company initiatives: from physical merchandise to employer branding and global digital campaigns.", "My focus was creative excellence: mentoring designers, art-directing complex briefs and guiding young creatives to agency-grade work."], "role": ["**Role:** Design Team Manager & Art Director", "**Team:** 22 multidisciplinary creatives (19 Tel Aviv, 2 Kyiv, 1 NYC)", "**Scope:** Physical merch, campus experiences, employer branding and systemic illustration", "**Design:** All work shown was designed by the team; I art-directed and mentored."], "hero": {"src": "assets/art-direction/v2/me-tableware-shoot.jpg", "alt": ""}, "sections": [{"title": "01", "big": "Merch & packaging", "text": ["Wix Things, the internal merchandise line: apparel concepts, print production and full-scale photoshoots."], "cols": 2, "gallery": [{"src": "assets/art-direction/v2/me-duffel-shoot.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-socks.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-coffee.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-gin.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-cups.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-duffels.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-bags.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-corridor.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-video.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-tote.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-umbrella.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-smallbottle.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-tee-2011.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-tee-2014.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-tee-2019.jpg", "alt": ""}, {"src": "assets/art-direction/v2/me-tees-couple.jpg", "alt": ""}], "tiles": true}, {"title": "02", "big": "Events", "text": ["Branding for events on and off campus: one cohesive experience from concept to execution, with its own illustration language where it fits, print production and more."], "cols": 2, "gallery": [{"src": "assets/art-direction/v2/ev-summer.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ev-bar-poster.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ev-mural.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ev-kid.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ev-box.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ev-rocket.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ev-booth1.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ev-booth2.jpg", "alt": ""}], "tiles": true}, {"title": "03", "big": "Websites", "text": ["Landing pages, campaigns and digital publications for talent programmes and internal services."], "cols": 1, "gallery": [{"src": "assets/art-direction/v2/web-congrats.jpg", "alt": ""}, {"src": "assets/art-direction/v2/web-create.jpg", "alt": ""}, {"src": "assets/art-direction/v2/web-empower.jpg", "alt": ""}, {"src": "assets/art-direction/v2/web-growtech.jpg", "alt": ""}, {"src": "assets/art-direction/v2/web-analyst-orange.jpg", "alt": ""}, {"src": "assets/art-direction/v2/web-analyst.jpg", "alt": ""}, {"src": "assets/art-direction/v2/web-nyc.jpg", "alt": ""}, {"src": "assets/art-direction/v2/web-days.jpg", "alt": ""}], "tiles": true}, {"title": "04", "big": "Photoshoots", "cols": 2, "gallery": [{"src": "assets/art-direction/v2/ph-01.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-02.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-03.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-04.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-05.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-06.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-07.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-08.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-09.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-10.jpg", "alt": ""}, {"src": "assets/art-direction/v2/ph-11.jpg", "alt": ""}], "tiles": true}, {"title": "05", "big": "Illustrations", "text": ["Wix’s illustration language is colourful, friendly and eclectic by design. We chose to welcome different styles, for a richer experience and plenty of creative freedom."], "cols": 2, "gallery": [{"src": "assets/art-direction/v2/il-badges.jpg", "alt": ""}, {"src": "assets/art-direction/v2/il-beer.jpg", "alt": ""}, {"src": "assets/art-direction/v2/il-xmas.jpg", "alt": ""}, {"src": "assets/art-direction/v2/il-2024.jpg", "alt": ""}, {"src": "assets/art-direction/v2/il-blocks.jpg", "alt": ""}, {"src": "assets/art-direction/v2/il-garden.jpg", "alt": ""}, {"src": "assets/art-direction/v2/il-surf.jpg", "alt": ""}, {"src": "assets/art-direction/v2/il-flowers.jpg", "alt": ""}, {"src": "assets/art-direction/v2/il-savedate.jpg", "alt": ""}, {"src": "assets/art-direction/v2/il-poster-breakfast.png", "alt": ""}, {"src": "assets/art-direction/v2/il-poster-dribble.png", "alt": ""}, {"src": "assets/art-direction/v2/il-poster-coffee.png", "alt": ""}, {"src": "assets/art-direction/v2/il-ship.png", "alt": ""}, {"src": "assets/art-direction/v2/il-2023.png", "alt": ""}, {"src": "assets/art-direction/v2/il-vector.png", "alt": ""}, {"src": "assets/art-direction/v2/il-shana-tova.png", "alt": ""}, {"src": "assets/art-direction/v2/il-basketball.png", "alt": ""}, {"src": "assets/art-direction/v2/il-presents.png", "alt": ""}, {"src": "assets/art-direction/v2/il-football.png", "alt": ""}, {"src": "assets/art-direction/v2/il-book-fair.png", "alt": ""}], "tiles": true}, {"title": "Leadership & creative mentorship", "bullets": ["**Creative mentorship.** Feedback channels, design critiques and core visual skills across print and digital.", "**Design SWAT strategy.** Challenged briefs with teams across the company and embedded designers in high-priority work.", "**Team alignment.** Kept remote hubs aligned with high standards and a collaborative culture."]}], "outcomeTitle": "Core impact", "impact": [{"title": "High visual standards at scale", "text": "Consistent art direction quality across a 22-person team and global offices."}, {"title": "Culture & brand alignment", "text": "Internal branding and campus life got the craft usually reserved for customer campaigns."}, {"title": "Creative empowerment", "text": "Critique frameworks that grew execution-focused designers into strategic visual leaders."}], "hideMeta": true}}</script>
+
+<script>
+// ---- Content: swap this block to reuse the template ----
+const SITE = {
+  // davidrinman-style statement, aaronpoeandco tone: built from Ella's v1 about text.
+  statement: "Ella is a Design Lead at Base44, after a decade at Wix. She has led three design teams, bringing out the best in people and building teams that work well together.",
+};
+// About page (switched off for now): Ella's v1 About text, unchanged (the book's name spelled as on its v2 page).
+const ABOUT = {
+  title: "Design with people in mind",
+  text: [
+    "I’m a Design Lead at Base44, with more than a decade at Wix behind me, where I grew from hands-on design into leadership. My core expertise is UI, web design, layout, typography and creative direction.",
+    "Lately I’m fascinated by where design meets AI: how to use what AI can do while keeping the craft alive and the standards high.",
+    "As a leader, I focus on bringing out the best in people: mentoring designers, helping them grow, and building teams that work well together.",
+    "I’m drawn to design with a social purpose, and I’m the proud co-lead of Agadot Amitiyot, a children’s book about 50 inspiring Israeli women.",
+  ],
+  services: ["UI design", "Web design", "Layout & typography", "Creative direction", "Design & AI", "Mentoring & leadership"],
+  education: "Visual Communication, Bezalel Academy of Arts and Design",
+};
+const CASES = JSON.parse(document.getElementById("caseData").textContent);
+const AD = "assets/art-direction/v2/";
+
+// Each team: a blurb, then its projects (the first is the default).
+// A project's texts and media come from a v1 case (`cs`), or one section of it (`sec`).
+const TEAMS = [
+  {
+    slug: "base44-design",
+    name: "Base44 Design",
+    role: "Design Lead & AI Workflow Architect",
+    // Home tile (sizes are Figma pixels at 1440): the designed components video, whole (16:9).
+    tile: { w: 718, h: 404, cap: "Leading a fully AI team to excellent craft",
+      media: { type: "video", src: "assets/designed/components/components-hero.mp4", poster: "assets/designed/components/components-hero.jpg" } },
+    // Ella's wording, lightly polished.
+    text: [
+      "In my current role at Base44, I lead a small design team: two content designers, a product designer and a content specialist.",
+      "We create content for the product, such as templates and designed components, and work closely with the product teams to improve and enhance the design. One example is beautification: constantly improving what the Base44 editor produces, so users can create better-looking websites and apps.",
+      "We’re a small team tasked with big projects, so we often work with other Wix design teams in Tel Aviv and Kyiv."
+    ],
+    work: [
+      // boxed: videos sit on grey panels at 60% width (the recordings pixelate at full width).
+      { slug: "designed-components", title: "Designed components", cs: "base44-components", boxed: true, outcomeFirst: true },
+      // blurb: stand-in text until Ella sends the project blurbs.
+      { slug: "templates-flow", title: "Templates flow", cs: "base44-templates",
+        blurb: ["I led the creation of Base44’s official templates: mini-brands for real business niches, chosen from what people actually search for.", "An agentic AI workflow took over the boilerplate, so designers could focus on art direction and visual craft."] },
+    ],
+  },
+  {
+    slug: "wix-design-development",
+    name: "Wix Design Development",
+    label: "Design Development Team at Wix",
+    role: "Design Team Manager & Art Director",
+    tile: { w: 578, h: 629, capName: "Design Development", cap: "a 22 person multi disciplinary agency",
+      media: { src: AD + "me-socks-shoot.jpg" }, op: "50% 100%" },
+    // Ella's wording from the Figma file.
+    text: [
+      "As Design Team Manager and Art Director of the design development team, I led a 22-person internal design agency, a dedicated “Design SWAT” team for high-impact company initiatives: from physical merchandise to employer branding and global digital campaigns.",
+      "My focus was creative excellence: mentoring designers, art-directing complex briefs and guiding young creatives to agency-grade work."
+    ],
+    teamCase: "internal-art-direction",          // its leadership notes and core impact belong to the team
+    work: [
+      // Curated and cropped in Figma: r = frame width / height, op = object-position. "team" = leadership notes.
+      { slug: "merch-packaging", title: "Merch & packaging", rows: [
+        [{ src: AD + "me-socks-shoot.jpg", r: 992 / 606, op: "50% 92.6%" }],
+        "team",
+        [{ src: AD + "me-coffee.jpg" }, { src: AD + "me-cup-shoot.jpg", r: 707 / 537, op: "50% 9.3%" }],
+        [{ src: AD + "me-duffel-shoot.jpg", r: 992 / 532, op: "50% 15.5%" }],
+        [{ src: AD + "me-bags.jpg", r: 992 / 273, op: "50% 0%" }],
+        [{ src: AD + "me-duffels.jpg", r: 992 / 298, op: "50% 0%" }],
+        [{ src: AD + "me-video.jpg", r: 504 / 646 }, { src: AD + "me-tote.jpg", r: 472 / 646, op: "50% 0%" }],
+        [{ src: AD + "me-tee-2014.jpg", r: 502 / 638, op: "61% 50%" }, { src: AD + "me-umbrella.jpg", r: 441 / 638, op: "50% 0%" }],
+      ] },
+      // Grouped by event: a string is the event's small title, then its rows of pictures.
+      { slug: "events", title: "Events", blurb: ["Branding for events on and off campus: one cohesive experience from concept to execution, with its own illustration language where it fits, print production and more."], rows: [
+        "Shalom Kita Alef",
+        [{ src: AD + "ev-kita-booth.jpg", r: 2000 / 1334 }],
+        [{ src: AD + "ev-kita-blocks.jpg", r: 2000 / 1334 }, { src: AD + "ev-kita-bands.jpg", r: 2000 / 1334 }],
+        [{ src: AD + "ev-kita-yellow-wall.jpg", r: 2000 / 1334 }],
+        [{ src: AD + "ev-kita-bags.jpg", r: 2000 / 1334 }, { src: AD + "ev-rocket.jpg", r: 622 / 894 }],
+        "Wix\u2019s 18th anniversary",
+        [{ src: AD + "ev-18-hall.jpg", r: 2000 / 1334 }],
+        [{ src: AD + "ev-18-banner.jpg", r: 1336 / 2000 }, { src: AD + "ev-18-cakes.jpg", r: 2000 / 1336 }],
+        "Wix Engineering Conference",
+        [{ src: AD + "ev-conf-nolimits.jpg", r: 2000 / 1336 }],
+        [{ src: AD + "ev-conf-booths-wide.jpg", r: 2000 / 1336 }, { src: AD + "ev-conf-booths.jpg", r: 2000 / 1336 }],
+        [{ src: AD + "ev-conf-matrix.jpg", r: 2000 / 1335 }],
+        "Bar The Corner",
+        [{ src: AD + "ev-bar-terrace.jpg", r: 2000 / 1333 }],
+        [{ src: AD + "ev-bar-sign.jpg", r: 1333 / 2000 }, { src: AD + "ev-bar-menu.jpg", r: 1333 / 2000 }],
+        [{ src: AD + "ev-bar-flags.jpg", r: 2000 / 1333 }],
+        [{ src: AD + "ev-bar-pillows.jpg", r: 2000 / 1333 }, { src: AD + "ev-bar-poster.jpg", r: 856 / 1212 }],
+        "Other events",   // stand-in title until Ella names these
+        [{ src: AD + "ev-summer.jpg", r: 1230 / 1124 }, { src: AD + "ev-mural.jpg", r: 1184 / 790 }],
+        [{ src: AD + "ev-kid.jpg", r: 860 / 572 }, { src: AD + "ev-box.jpg", r: 1288 / 774 }],
+        [{ src: AD + "ev-booth1.jpg", r: 658 / 450 }, { src: AD + "ev-booth2.jpg", r: 658 / 450 }],
+      ] },
+      { slug: "websites", title: "Websites", cs: "internal-art-direction", sec: 2 },
+      { slug: "photoshoots", title: "Photoshoots", cs: "internal-art-direction", sec: 3,
+        blurb: ["Art direction for the team’s photoshoots, from concept and styling to the final edit, for merch, campaigns and employer branding."] },
+      // Laid out by Ella in the "Illustrations page" design canvas.
+      { slug: "illustrations", title: "Illustrations", blurb: ["Wix\u2019s illustration language is colourful, friendly and eclectic by design. We chose to welcome different styles, for a richer experience and plenty of creative freedom."], rows: [
+        [{ src: AD + "il-poster-breakfast.png", r: 277 / 386 }, { src: AD + "il-poster-dribble.png", r: 277 / 386 }, { src: AD + "il-poster-coffee.png", r: 277 / 386 }],
+        [{ src: AD + "il-book-fair.png", r: 494 / 253 }, { src: AD + "il-ship.png", r: 470 / 247 }],
+        [{ src: AD + "il-football.png", r: 467 / 239 }, { src: AD + "il-presents.png", r: 753 / 405 }],
+        [{ src: AD + "il-basketball.png", r: 767 / 279, w: 87.8 }],
+        [{ src: AD + "il-blocks.jpg", r: 1563 / 1042 }],
+        [{ src: AD + "il-garden.jpg", r: 977 / 522, op: "50% 0%" }],
+        [{ src: AD + "il-2023.png", r: 294 / 412 }, { src: AD + "il-shana-tova.png", r: 583 / 400 }],
+      ] },
+    ],
+  },
+  {
+    slug: "wix-templates",
+    name: "Wix Templates",
+    label: "Wix Templates Team",
+    role: "Design Team Manager & Art Director",
+    // The 7 Wix templates, a slow scroll of each (same recording as wix-templates-all.gif, as a lighter MP4).
+    tile: { w: 636, h: 397, cap: "", media: { type: "video", src: "assets/wix-templates/wix-templates-all.mp4", poster: "assets/wix-templates/wix-templates-all.jpg" } },
+    // Ella's wording.
+    text: [
+      "As Design Team Manager and Art Director of the Wix templates team, I led a 15-person group: 11 designers, a content specialist, and a technical design team with its own manager reporting to me. We focused on creating high-craft user content, from full website templates to Add Panel assets like buttons, illustrations, images and components.",
+      "We approached every template as a mini-brand, using user data to connect people with the exact designs they needed. Acting as the product’s first “super users,” we tested every new editor feature early and partnered closely with senior management to bridge product gaps before public launch."
+    ],
+    work: [
+      // The 7 Harmony templates: name, link to the Wix template page, then a scroll of it (from the GIFs, as MP4).
+      { slug: "harmony-templates", title: "Harmony templates", rows: [
+        ["Bread Shop", "3899", "bread-shop"], ["Coming Soon", "wh-1002", "coming-soon"], ["Cyber Security Company", "wh-1004", "cyber-security"],
+        ["Product Landing Page", "wh-1005", "product-landing-page"], ["Photographer", "wh-1012", "photographer"],
+        ["Digital Artist", "wh-1018", "digital-artist"], ["Illustrator", "wh-1367", "illustrator"],
+      ].flatMap(([name, id, f]) => [name,
+        { text: [`[View the template](https://www.wix.com/website-template/view/html/${id})`] },
+        [{ type: "video", src: `assets/wix-templates/harmony/${f}.mp4`, poster: `assets/wix-templates/harmony/${f}.jpg` }]]) },
+      // Ella's text, lightly edited: the premise, the art-style moodboards, the sets each designer made, then the content in the editor.
+      { slug: "add-panel", title: "Add panel for Wix Harmony",
+        blurb: ["A complicated project with an ambitious premise. Together with the team lead of the AI content creation team, I co-led the creation of brand new content for the Add panel of Wix Harmony, the new editor that was about to launch.",
+          "The editor team wanted a dynamic experience that would let every user find the components that fit their style and their intent. To make this happen, they decided we should work from historic art styles, such as Art Nouveau and Cubism, to create an eclectic experience."],
+        rows: [
+          [{ src: "assets/harmony/add-panel/moodboard-art-nouveau.webp", r: 2000 / 982 }],
+          [{ src: "assets/harmony/add-panel/moodboard-cubism.webp", r: 2000 / 982 }],
+          [{ src: "assets/harmony/add-panel/moodboard-street-art.webp", r: 2000 / 982 }],
+          { text: ["Each designer was given an art style and an intent, for example a pizza shop in a Brutalist style, and created a set of buttons, icons, illustrations and components for it."] },
+          [{ src: "assets/harmony/add-panel/set-wellness.webp", r: 799 / 2000 }, { src: "assets/harmony/add-panel/set-3d.webp", r: 946 / 2000 }, { src: "assets/harmony/add-panel/set-pixel.webp", r: 946 / 2000 }],
+          [{ src: "assets/harmony/add-panel/set-real-estate.webp", r: 946 / 2000 }, { src: "assets/harmony/add-panel/set-natural-wellness.webp", r: 946 / 2000 }, { src: "assets/harmony/add-panel/set-coffee.webp", r: 946 / 2000 }],
+          // Drafted line, approved by Ella.
+          { text: ["The final result inside the Wix editor: the new Add panel content, from text combos and illustrations to buttons, stickers, icons, vector art and designed boxes."] },
+          // The 7 editor screenshots, in the panel's own order (text, image, button, graphics, box), as one looping slideshow, 1.6s each.
+          [{ type: "video", src: "assets/harmony/add-panel/panel-slideshow.mp4", poster: "assets/harmony/add-panel/panel-slideshow.jpg" }],
+        ] },
+    ],
+  },
+  {
+    // Ella's 4th team. Its caption is still to come.
+    slug: "my-own-projects",
+    name: "Projects I\u2019ve designed",
+    role: "",
+    tile: { w: 600, h: 400, cap: "", media: { src: "assets/books/books-shelf-2.jpg" } },
+    text: [],
+    work: [
+      // From v1's "Various Things I've designed" page.
+      // Each template: its text and link, then its video.
+      { slug: "templates", title: "Templates", rows: [
+        { text: ["A portfolio template for designers and art directors: a confident intro, an index of selected work and a page for every project, laid out with an editorial feel.", "[View the template](https://greenway-gallery-view.base44.app)"] },
+        [{ type: "video", src: "assets/designed/greenway-portfolio.mp4", poster: "assets/designed/greenway-portfolio.jpg" }],
+        { text: ["A mood and mental health journal app with a calm, gentle feel: a quick daily check-in for mood, emotions, sleep and energy, a view of the week, and a Trends page that shows patterns over time. Not live yet.", "[View the app](https://mood-mental-health-journal-copy-bdce4a0a.base44.app)"] },
+        [{ type: "video", src: "assets/designed/mood-journal.mp4", poster: "assets/designed/mood-journal.jpg" }],
+        { text: ["Wine Stories, a Wix Studio website template for a wine tour business: big landscape imagery, an elegant serif wordmark and a soft, warm palette, with pages for tours, the story behind them and booking.", "[View the template](https://www.wix.com/website-template/view/html/3636)"] },
+        [{ type: "video", src: "assets/designed/wine-tour.mp4", poster: "assets/designed/wine-tour.jpg" }],
+        { text: ["Platform Explorer, a Base44 vibe coding template. It scans every corner of social media and surfaces what actually matters, curated by AI and personalised to your world, with a live feed of what\u2019s trending across platforms.", "[View the template](https://base44.com/templates/apps/view/social-platform-content-recommendation)"] },
+        [{ type: "video", src: "assets/templates/social-platform-content-recommendation.mp4", poster: "assets/templates/social-platform-content-recommendation.jpg" }],
+      ] },
+      { slug: "designed-components-base44", title: "Designed components for Base44", boxed: true,
+        media: ["01", "02", "03", "04", "05", "06", "07"].map(n => ({ type: "video", src: `assets/designed/components/comp-${n}.mp4`, poster: `assets/designed/components/comp-${n}.jpg` })) },
+      { slug: "branded-campus-books", title: "Branded Campus books",
+        blurb: ["I was asked to create a small collection of fake books with tongue-in-cheek titles for senior management\u2019s new offices, bringing humour and colour into an otherwise dull workspace."],
+        rows: [
+          [{ src: "assets/books/books-shelf.jpg", r: 2000 / 1334 }],
+          [{ src: "assets/designed/blackout-book.jpg", r: 1800 / 1184 }],
+          [{ src: "assets/books/books-shelf-tall.jpg", r: 1334 / 2000 }, { src: "assets/books/books-ctrl-z.jpg", r: 1334 / 2000 }],
+          [{ src: "assets/books/cover-ctrl-z.jpg", r: 1318 / 751 }, { src: "assets/books/cover-computer-says-no.jpg", r: 1317 / 771 }],
+          [{ src: "assets/books/cover-ask-us-nothing.jpg", r: 1312 / 799 }, { src: "assets/books/cover-surviving-blackout.jpg", r: 1320 / 747 }],
+          [{ src: "assets/books/cover-jira-ticket.jpg", r: 1317 / 767 }, { src: "assets/books/cover-pushing-thursday.jpg", r: 1319 / 740 }],
+          [{ src: "assets/books/books-shelf-2.jpg", r: 2000 / 1334 }],
+          [{ src: "assets/books/books-jira.jpg", r: 1334 / 2000 }, { src: "assets/books/books-stack.jpg", r: 1334 / 2000 }],
+        ] },
+      // Ella's text.
+      { slug: "agadot-amitiyot", title: "Agadot Amitiyot",
+        blurb: ["Agadot Amitiyot (True Legends): 50 women to grow up with in Israel.",
+          "The book began as a social initiative of HaMeriza, a design collective I was part of, which uses design to drive social change. We started a crowdfunding campaign that drew over 1,000 supporters and raised 145,000 shekels to create the book.",
+          "Each of the 50 stories, written by Shoham Smith, is paired with an original illustration by a different Israeli illustrator, bringing together a wide range of voices, styles and techniques.",
+          "My co-founders Morin Glimmer and Tal Maimon and I worked very hard on the design, production and art direction, working closely with the writer, the editor and each of the 50 illustrators.",
+          "[Read about it in Portfolio](https://www.prtfl.co.il/archives/112912) \u00b7 [The book\u2019s website](https://agadot.hameriza.com/)"],
+        rows: [
+          [{ src: "assets/agadot/agadot-cover.jpg", r: 2000 / 1333 }],
+          [{ type: "video", src: "assets/agadot/agadot-flip.mp4", poster: "assets/agadot/agadot-flip.jpg" }],
+          [{ src: "assets/agadot/agadot-spread-dana.jpg", r: 1920 / 1446 }, { src: "assets/agadot/agadot-spread-karnit.jpg", r: 1920 / 1446 }],
+          [{ src: "assets/agadot/agadot-spread-lea.jpg", r: 1920 / 1446 }, { src: "assets/agadot/agadot-spread-talia.jpg", r: 1920 / 1446 }],
+        ] },
+    ],
+  },
+];
+// ---------------------------------------------------------
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener"><u>$1</u></a>');
+const pad = n => String(n).padStart(2, "0");
+const isVid = m => m.type === "video" || /\.mp4$/.test(m.src);
+const media = (m, cls = "") => isVid(m)
+  ? `<video class="${cls}" src="${m.src}" poster="${m.poster || ""}" muted loop playsinline preload="none"></video>`
+  : m.r   // a crop chosen in Figma: fixed frame ratio + focus point
+    ? `<img class="crop ${cls}" src="${m.src}" alt="${esc(m.alt || "")}" loading="lazy" decoding="async" style="aspect-ratio:${m.r};flex-grow:${m.r};object-position:${m.op || "50% 50%"}${m.w ? `;width:${m.w}%;margin:0 auto;display:block` : ""}">`
+    : `<img class="${cls}" src="${m.src}" alt="${esc(m.alt || "")}" loading="lazy" decoding="async" onload="this.style.flexGrow=this.naturalWidth/this.naturalHeight">`;
+
+// Play videos only while on screen.
+const vio = new IntersectionObserver(es => es.forEach(e => {
+  const v = e.target;
+  if (e.isIntersecting && v.closest(".view.on")) { v.preload = "auto"; v.play().catch(() => {}); } else v.pause();
+}), { threshold: .2 });
+
+/* ---------- Home: a looping row of team tiles, each at its own size; the active tile is centred ---------- */
+$("#hStatement").textContent = SITE.statement;
+const stage = $("#stage"), track = $("#track");
+const N = TEAMS.length, COPIES = 3;            // three copies so both sides always have tiles
+// Left-to-right order of the tiles on the homepage (from Figma), and the one that starts in the middle.
+const HOME = ["wix-templates", "wix-design-development", "base44-design", "my-own-projects"].map(s => TEAMS.find(t => t.slug === s));
+const HOME_START = 1;
+const tiles = [];
+for (let c = 0; c < COPIES; c++) HOME.forEach((t) => {
+  const i = TEAMS.indexOf(t);
+  const T = t.tile, el = document.createElement("a");
+  el.className = "tile";
+  el.href = "#/" + t.slug;
+  el.dataset.i = i;
+  el.dataset.h = HOME.indexOf(t);
+  el.draggable = false;
+  el.style.cssText = `--w:${T.w};--r:${T.w}/${T.h};--op:${T.op || "50% 50%"}`;
+  const pic = T.win
+    ? `<span class="win" style="${T.win.box}">${media(T.media).replace(/^<(\w+)/, `<$1 style="${T.win.item}"`)}</span>`
+    : T.media ? media(T.media) : "";
+  el.innerHTML = `<p class="cap"><b>${esc(T.capName || t.name)}</b>${T.cap ? " " + esc(T.cap) : ""}</p><div class="pic">${pic}</div>`;
+  if (c !== 1) el.tabIndex = -1;
+  track.appendChild(el);
+  tiles.push(el);
+});
+tiles.forEach(el => el.querySelectorAll("img").forEach(i => { i.loading = "eager"; i.onload = null; i.style.flexGrow = ""; }));
+const TILE_R = tiles.map(el => { const T = HOME[el.dataset.h].tile; return T.w / T.h; });
+let cur = N + HOME_START, shift = 0;                         // cur: index into tiles (middle copy = N..2N-1)
+
+function sizeStage() {
+  place(false);
+}
+function place(anim) {
+  track.classList.toggle("anim", !!anim);
+  // Work out the final layout (middle tile big, the rest small) so the move and the resize end together.
+  const px = innerWidth / 1440, gap = 40 * px;
+  const width = k => TILE_R[k] * (k === cur ? 564 : 360) * px;
+  let left = 0;
+  for (let k = 0; k < cur; k++) left += width(k) + gap;
+  const x = innerWidth / 2 - (left + width(cur) / 2) + shift;
+  track.style.transform = `translate3d(${x}px,0,0)`;
+  tiles.forEach((t, k) => {
+    t.classList.toggle("left", k < cur);
+    t.classList.toggle("on", k === cur);
+    const v = t.querySelector("video");
+    if (v) { if (k === cur && $("#home").classList.contains("on")) { v.preload = "auto"; v.play().catch(() => {}); } else v.pause(); }
+  });
+}
+// After a move, jump back to the middle copy without animation (same picture, so it doesn't show).
+track.addEventListener("transitionend", e => {
+  if (e.target !== track) return;
+  const k = ((cur % N) + N) % N + N;
+  if (k !== cur) { cur = k; place(false); }
+});
+function goTo(k) { cur = Math.max(0, Math.min(tiles.length - 1, k)); shift = 0; place(true); }
+function step(dir) { goTo(cur + dir); }
+function nearest() {
+  const mid = innerWidth / 2;
+  let best = cur, bd = Infinity;
+  tiles.forEach((t, k) => { const r = t.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - mid); if (d < bd) { bd = d; best = k; } });
+  return best;
+}
+
+// Drag / swipe; a click on a side tile centres it, a click on the centre tile opens its team.
+let drag = null;
+stage.addEventListener("pointerdown", e => {
+  if (e.button !== 0) return;
+  drag = { x: e.clientX, moved: false, id: e.pointerId };
+});
+addEventListener("pointermove", e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x;
+  if (!drag.moved && Math.abs(dx) > 6) { drag.moved = true; stage.classList.add("drag"); stage.setPointerCapture(drag.id); }
+  if (!drag.moved) return;
+  shift = dx; place(false);
+});
+addEventListener("pointerup", () => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  stage.classList.remove("drag");
+  if (d.moved) { const n = nearest(); goTo(n === cur && Math.abs(shift) > 60 ? cur + (shift < 0 ? 1 : -1) : n); }
+});
+stage.addEventListener("click", e => {
+  const el = e.target.closest(".tile");
+  if (!el) return;
+  if (stage.dataset.justDragged) { e.preventDefault(); return; }
+  const k = tiles.indexOf(el);
+  if (k !== cur) { e.preventDefault(); goTo(k); }
+});
+stage.addEventListener("pointerup", () => { if (stage.classList.contains("drag") || shift) { stage.dataset.justDragged = 1; setTimeout(() => delete stage.dataset.justDragged, 0); } }, true);
+addEventListener("pointercancel", () => { if (drag) { drag = null; stage.classList.remove("drag"); goTo(nearest()); } });
+let wheelLock = 0;     // a sideways trackpad swipe moves the tiles (one step per gesture); up/down scrolls the page
+$("#home").addEventListener("wheel", e => {
+  if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+  e.preventDefault();
+  const d = e.deltaX;
+  if (Math.abs(d) < 12 || Date.now() < wheelLock) return;
+  wheelLock = Date.now() + 850;
+  step(d > 0 ? 1 : -1);
+}, { passive: false });
+addEventListener("keydown", e => {
+  if (!$("#home").classList.contains("on")) return;
+  if (e.key === "ArrowRight") step(1);
+  if (e.key === "ArrowLeft") step(-1);
+  if (e.key === "Enter" && document.activeElement === document.body) location.hash = "#/" + TEAMS[tiles[cur].dataset.i].slug;
+});
+
+/* ---------- Text + media blocks for the right scroll (from Ella's v1 cases) ---------- */
+const paras = t => [].concat(t || []).map(p => `<p>${md(p)}</p>`).join("");
+function itemsHTML(list) {
+  return list && list.length ? `<ul class="items">${list.map(s => {
+    const m = s.match(/^\*\*(.+?)\*\*\s*(.*)$/);
+    return m ? `<li><span>${esc(m[1].replace(/\.$/, ""))}</span><span>${md(m[2])}</span></li>` : `<li class="plain"><span>${md(s)}</span></li>`;
+  }).join("")}</ul>` : "";
+}
+function factsHTML(list) {
+  return list && list.length ? `<dl class="facts">${list.map(s => {
+    const m = s.match(/^\*\*(.+?):\*\*\s*(.*)$/);
+    return m ? `<div><dt>${esc(m[1])}</dt><dd>${md(m[2])}</dd></div>` : `<div><dt></dt><dd>${md(s)}</dd></div>`;
+  }).join("")}</dl>` : "";
+}
+function numsHTML(stats) {
+  return stats && stats.length ? `<div class="nums">${stats.map(x => `<div><p class="n">${esc(x.num)}</p><p>${md(x.text)}</p>${x.note ? `<p class="mute">${md(x.note)}</p>` : ""}${(x.items || []).map(i => `<p class="mute">${esc(i)}</p>`).join("")}</div>`).join("")}</div>` : "";
+}
+function flowHTML(flow) {
+  return flow && flow.length ? `<ol class="flow">${flow.map((f, i) => `<li><span>${pad(i + 1)}</span>${esc(f.title)}${f.items ? `<ul>${f.items.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}</li>`).join("")}</ol>` : "";
+}
+const tx = (label, body) => body ? `<section class="tx reveal"><h3>${esc(label || "")}</h3><div class="body">${body}</div></section>` : "";
+// Media: one per row, or two per row when the v1 case showed them in two columns.
+let BOXED = false;     // set while rendering a project with `boxed: true`
+function mediaHTML(list, cols) {
+  list = (list || []).filter(Boolean);
+  const rows = [];
+  if (cols === 2) for (let i = 0; i < list.length; i += 2) rows.push(list.slice(i, i + 2));
+  else list.forEach(m => rows.push([m]));
+  return rows.map(r => `<figure class="frame reveal${r.length > 1 ? " pair" : ""}">${BOXED && r.length === 1 && isVid(r[0]) ? `<div class="box">${media(r[0])}</div>` : r.map(m => media(m)).join("")}${r.length === 1 && r[0].caption ? `<figcaption>${esc(r[0].caption)}</figcaption>` : ""}</figure>`).join("");
+}
+function sectionHTML(sec, skipLabel) {
+  const label = sec.big ? (/^\d+$/.test(sec.title) ? sec.big : sec.title) : sec.title;
+  const body = (sec.big && !/^\d+$/.test(sec.title) ? `<p class="lead">${esc(sec.big)}</p>` : "")
+    + paras(sec.text) + flowHTML(sec.flow) + itemsHTML(sec.bullets) + numsHTML(sec.stats);
+  return (skipLabel ? (body ? `<section class="tx reveal"><h3></h3><div class="body">${body}</div></section>` : "") : tx(label, body))
+    + mediaHTML([sec.figure, ...(sec.gallery || [])], sec.cols);
+}
+function outcomeHTML(cs) {
+  const lead = (cs.statsLead || []).map(x => `<p class="lead">${esc(x.num)}</p><p>${md(x.text)}</p>`).join("");
+  const impact = itemsHTML((cs.impact || []).map(x => `**${x.title}.** ${x.text}`));
+  const body = lead + numsHTML(cs.stats) + impact;
+  return body ? tx(cs.outcomeTitle || "The outcome", body) : "";
+}
+const rowHTML = r => `<figure class="frame reveal${r.length > 1 ? " pair" : ""}">${r.map(m => media(m)).join("")}</figure>`;
+function projectBody(w, t) {
+  BOXED = !!w.boxed;
+  try { return projectBodyInner(w, t); } finally { BOXED = false; }
+}
+function projectBodyInner(w, t) {
+  if (w.rows) return w.rows.map(r => r === "team" ? teamNotes(t) : typeof r === "string" ? `<h3 class="ev-title reveal">${esc(r)}</h3>`
+    : r.text ? `<div class="ev-text reveal">${paras(r.text)}</div>` : rowHTML(r)).join("");
+  if (!w.cs) return mediaHTML(w.media);
+  const cs = CASES[w.cs];
+  if (w.sec != null) return sectionHTML({ ...cs.sections[w.sec], text: null }, true);   // its text is the project blurb
+  let h = mediaHTML([cs.hero]);
+  h += tx(cs.contextLabel || "Context", paras(cs.context) + factsHTML(cs.role) + (cs.status ? factsHTML([`**Status:** ${cs.status}`]) : ""));
+  h += mediaHTML(cs.introMedia);
+  if (w.outcomeFirst) h += outcomeHTML(cs);   // the numbers come right after the first videos
+  h += mediaHTML(cs.preChallengeMedia);
+  if (cs.statement) h += tx("The challenge", `<p class="lead">${esc(cs.statement)}</p>` + paras(cs.challenge) + itemsHTML(cs.constraints)) + mediaHTML(cs.challengeMedia);
+  if (cs.did) h += tx("What I did", itemsHTML(cs.did)) + mediaHTML(cs.didMedia);
+  (cs.sections || []).forEach(sec => { h += sectionHTML(sec); });
+  return w.outcomeFirst ? h : h + outcomeHTML(cs);
+}
+// The team blurb opens every project page of the team.
+const blurbHTML = (label, text) => text && text.length
+  ? `<section class="blurb reveal"><h3>${esc(label)}</h3><div class="body">${paras(text)}</div></section>` : "";
+// The team's first project opens with the team blurb; every other project opens with its own blurb.
+const projectBlurb = w => w.blurb || (w.sec != null ? CASES[w.cs].sections[w.sec].text : null);
+// The team's own notes (leadership) and its core impact, shown on its first project.
+const teamNotes = t => t.teamCase ? CASES[t.teamCase].sections.filter(s => !s.gallery).map(s => sectionHTML(s)).join("") : "";
+const teamImpact = t => t.teamCase ? outcomeHTML(CASES[t.teamCase]) : "";
+
+/* ---------- Team page (corentinbernadou: sticky left column, scrolling right column) ---------- */
+const team = $("#team");
+let teamObs = null, curTeam = null;
+function renderTeam(t, w) {
+  const i = TEAMS.indexOf(t), k = t.work.indexOf(w);
+  const own = k > 0 || !(t.text && t.text.length);   // the project's own blurb, not the team's
+  // The project's name shows only in the menu (a hidden heading keeps it for screen readers).
+  const head = (w.cs && w.sec == null && CASES[w.cs].subtitle ? `<p>${esc(CASES[w.cs].subtitle)}</p>` : "")
+    + (own && projectBlurb(w) ? `<div class="p-blurb">${paras(projectBlurb(w))}</div>` : "");
+  const nextW = t.work[k + 1], nextT = TEAMS[(i + 1) % N];
+  const next = nextW
+    ? `<a class="next" href="#/${t.slug}/${nextW.slug}"><small>Next project</small><span class="big">${esc(nextW.title)}</span></a>`
+    : `<a class="next" href="#/${nextT.slug}"><small>Next team</small><span class="big">${esc(nextT.name)}</span></a>`;
+  const right = `
+      ${k <= 0 ? blurbHTML(t.label || t.name, t.text) : ""}
+      <h2 class="sr">${esc(w.title)}</h2>${head ? `<header class="p-head reveal">${head}</header>` : ""}
+      ${projectBody(w, t)}
+      ${k === 0 ? (w.rows && w.rows.includes("team") ? "" : teamNotes(t)) + teamImpact(t) : ""}
+      ${next}`;
+  if (curTeam === t && team.querySelector(".t-media")) {
+    // Same team: only swap the project, the left column stays put.
+    const box = team.querySelector(".t-media");
+    team.querySelectorAll(".plist a").forEach(a => a.toggleAttribute("aria-current", a.getAttribute("href") === `#/${t.slug}/${w.slug}`));
+    box.classList.add("swap");
+    clearTimeout(renderTeam.t);
+    renderTeam.t = setTimeout(() => {
+      scrollTo(0, 0); box.innerHTML = right; box.classList.toggle("proj", own); wire();
+      requestAnimationFrame(() => box.classList.remove("swap"));
+    }, 420);
+    return;
+  }
+  curTeam = t;
+  team.innerHTML = `
+    <div class="t-wrap">
+      <aside class="t-info">
+        <div class="t-menu">
+          <a class="t-team" href="#/${t.slug}">${esc(t.name)}</a>
+          <nav class="plist" aria-label="Projects">${t.work.map(x => `
+            <a href="#/${t.slug}/${x.slug}"${x === w ? ' aria-current="page"' : ""}>
+${esc(x.title)}
+            </a>`).join("")}
+          </nav>
+        </div>
+        <div class="prog" aria-hidden="true"><div class="bar"><i id="barFill"></i></div><span id="barNum">0</span></div>
+      </aside>
+      <div class="t-media${own ? " proj" : ""}">${right}</div>
+    </div>`;
+  scrollTo(0, 0);
+  wire();
+}
+// About: the team-page shell, "About" at the top of the left column, text blocks on the right.
+function renderAbout() {
+  curTeam = null;
+  const first = TEAMS.find(t => t.slug === HOME[HOME_START].slug);
+  team.innerHTML = `
+    <div class="t-wrap">
+      <aside class="t-info">
+        <div class="t-menu"><a class="t-team" href="#/about">About</a></div>
+        <div class="prog" aria-hidden="true"><div class="bar"><i id="barFill"></i></div><span id="barNum">0</span></div>
+      </aside>
+      <div class="t-media proj">
+        <h2 class="sr">About</h2>
+        ${tx("About", `<p class="lead">${esc(ABOUT.title)}</p>` + paras(ABOUT.text))}
+        ${tx("What I do", itemsHTML(ABOUT.services))}
+        ${tx("Education", paras([ABOUT.education]))}
+        <a class="next" href="#/${first.slug}"><small>See the work</small><span class="big">${esc(first.name)}</span></a>
+      </div>
+    </div>`;
+  scrollTo(0, 0);
+  wire();
+}
+function wire() {
+  team.querySelectorAll("video").forEach(v => vio.observe(v));
+  if (teamObs) teamObs.disconnect();
+  teamObs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add("in"); }), { rootMargin: "0px 0px -6% 0px" });
+  team.querySelectorAll(".reveal").forEach(el => teamObs.observe(el));
+  onScroll();
+}
+function onScroll() {
+  if (!team.classList.contains("on")) return;
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const fill = $("#barFill");
+  const pct = max > 0 ? Math.min(100, Math.max(0, scrollY / max * 100)) : 0;
+  if (fill) fill.style.width = pct + "%";
+  const num = $("#barNum");
+  if (num) num.textContent = Math.round(pct);
+}
+addEventListener("scroll", onScroll, { passive: true });
+// Clicking the team name while already on the team's main page goes back to its top.
+team.addEventListener("click", e => {
+  const a = e.target.closest(".t-team");
+  if (a && a.getAttribute("href") === location.hash) { e.preventDefault(); scrollTo({ top: 0, behavior: "smooth" }); }
+});
+
+/* ---------- Routing: #/team or #/team/project (first project is the default) ---------- */
+function route() {
+  const [slug, ps] = location.hash.replace(/^#\/?/, "").split("/");
+  const t = TEAMS.find(x => x.slug === slug);
+  document.querySelectorAll("video").forEach(v => v.pause());
+  // About is off for now (Ella, 2026-11-13). To bring it back: add <a href="#/about">About</a> to the header links and
+  // route "about" here: hide #home, renderAbout(), team.classList.add("on"), body.is-team, title "About — Ella Moscovitz".
+  if (t) {
+    const w = t.work.find(x => x.slug === ps) || t.work[0] || { slug: "", title: t.name, media: [] };   // a team with no projects yet
+    $("#home").classList.remove("on");
+    document.body.style.overflow = "";
+    renderTeam(t, w);
+    team.classList.add("on");
+    onScroll();   // now that the view is on: progress number and team name
+    document.body.classList.add("is-team");
+    document.title = `${w.title === t.name ? "" : w.title + " — "}${t.name} — Ella Moscovitz`;
+    // Keep the carousel on this team for the way back.
+    cur = N + HOME.indexOf(t); shift = 0;
+  } else {
+    curTeam = null;
+    team.classList.remove("on");
+    document.body.classList.remove("is-team");
+    $("#home").classList.add("on");
+    scrollTo(0, 0);
+    document.title = "Ella Moscovitz — Design Lead";
+    sizeStage();
+  }
+}
+addEventListener("hashchange", route);
+addEventListener("resize", sizeStage);
+document.fonts && document.fonts.ready.then(sizeStage);
+addEventListener("load", sizeStage);
+sizeStage();
+route();
+</script>
+</body>
+</html>
