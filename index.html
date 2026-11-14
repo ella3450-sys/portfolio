@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ella Moscovitz — Design Lead</title>
 <meta name="description" content="Ella Moscovitz, Design Lead. The three design teams I lead: Base44 Design, Wix Design Development and Wix Templates.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="180x180">
+<link rel="apple-touch-icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- davidrinman.com uses Monument Grotesk (commercial). Inter Tight is the free Google Fonts match. -->
@@ -23,7 +26,7 @@
     --accent: #e0481c;
     --gut: clamp(14px, 1.1vw, 24px);
     --big: clamp(34px, 3.7vw, 86px);
-    --small: clamp(14px, 1.08vw, 25px);
+    --small: clamp(15px, 1.08vw, 25px);
     --ease: cubic-bezier(.22, .7, .15, 1);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -73,7 +76,7 @@
   .track { --main: 564; --side: 360; }
   .track.anim .tile { transition: width .3s ease; }
   .tile .cap {
-    font-family: var(--serif); font-size: calc(18 * var(--px)); line-height: 1.33; letter-spacing: 0;
+    font-family: var(--serif); font-size: max(15px, calc(18 * var(--px))); line-height: 1.33; letter-spacing: 0;
     margin-bottom: calc(12 * var(--px)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .tile .cap b { font-weight: 600; }
@@ -157,7 +160,7 @@
   .frame .box { background: var(--frame); padding: 6% 20%; }   /* video at 60% of the column on a grey panel */
   .frame.pair { display: flex; gap: var(--gut); align-items: flex-start; }
   .frame.pair > * { flex: 1 1 0; min-width: 0; }
-  .frame figcaption { margin-top: .6em; color: var(--mute); font-family: var(--serif); font-style: italic; font-size: .85em; }
+  .frame figcaption { margin-top: .6em; color: var(--mute); font-family: var(--serif); font-style: italic; font-size: max(13px, .85em); }   /* captions: never under 13px */
   .next { display: block; padding: 10vh 0 calc(var(--gut) * 3); }
   .next small { display: block; color: var(--mute); font-family: var(--serif); font-size: var(--small); margin-bottom: .6em; }
   .frame .crop { object-fit: cover; }
